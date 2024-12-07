@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recommendation System</title>
+    <script>
+        
+        function showLoading() {
+            document.getElementById("loadingOverlay").style.display = "flex";
+        }
+
+        function hideLoading() {
+            document.getElementById("loadingOverlay").style.display = "none";
+        }
+
+        function newUserPopup() {
+            document.getElementById("newUserPopup").style.display = "block";
+        }
+        
+        function oldUserPopup() {
+            document.getElementById("oldUserPopup").style.display = "block";
+        }
+        
+        function closePopup(popupId) {
+            document.getElementById(popupId).style.display = "none";
+        }
+        
+        async function registerUser() {
+
+            let tags = document.getElementById("newUserTags").value;
+            showLoading();
+            let response = await fetch("/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ tags: tags })
+            });
+            let data = await response.json();
+            hideLoading();
+            document.getElementById("userIdDisplay").innerText = `Your User ID: ${data.user_id}`;
+            document.getElementById("recommendationMessage").innerText = `Recommendations(New User) for: ${tags}`;
+            displayProducts(data.products);
+            closePopup('newUserPopup');
+        }
+
+        async function loginUser() {
+            let userId = document.getElementById("oldUserId").value;
+            let response = await fetch("/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ user_id: userId })
+            });
+            let data = await response.json();
+            if (data.status === "success") {
+                document.getElementById("searchBox").style.display = "block";
+                closePopup('oldUserPopup');
+            } else {
+                alert(data.message);
+            }
+        }
+
+        async function searchProducts() {
+            let description = document.getElementById("description").value;
+            let userId = document.getElementById("oldUserId").value;
+            showLoading();
+            let response = await fetch("/search", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ user_id: userId, description: description })
+            });
+            let data = await response.json();
+            hideLoading();
+            if (data.status === "error") {
+                alert(data.message);
+            } else {
+                document.getElementById("recommendationMessage").innerText = `Recommendations(Old User) for: ${description}`;
+                displayProducts(data.products);
+            }
+        }
+
+        function displayProducts(products) {
+            let productContainer = document.getElementById("productContainer");
+            productContainer.innerHTML = "";
+            products.forEach(product => {
+                productContainer.innerHTML += `
+                    <div class="product-card">
+                        <img src="${product.ImageURL}" alt="${product.Name}">
+                        <h3>${product.Name}</h3>
+                        <p>Brand: ${product.Brand}</p>
+                        <button>Buy Now</button>
+                    </div>
+                `;
+            });
+        }
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)), 
+            url("https://assets.zilliz.com/Group_13162_7d47954200.png");
+            background-size: auto;
+            background-position: center;
+            color: #333;
+            margin: 0;
+            padding: 50px;
+            text-align: center;
+            position: relative;
+            /* filter: brightness(0.2) */
+        }
+
+        /* body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        } */
+
+        h1 {
+            color: #000000;
+            position: relative;
+            z-index: 2;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+            font-size: 16px;
+        }
+
+        #loadingOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        /* Spinner Animation */
+        #loadingSpinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #4CAF50;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Keyframes for spinner rotation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Loading text */
+        #loadingText {
+            margin-top: 15px;
+            font-size: 1.2em;
+            color: #333;
+            font-weight: bold;
+        }
+
+        /* Loading dot animation */
+        @keyframes loadingDots {
+            0%, 20% { content: 'Loading'; }
+            40% { content: 'Loading.'; }
+            60% { content: 'Loading..'; }
+            80%, 100% { content: 'Loading...'; }
+        }
+
+        #loadingText::after {
+            content: 'Loading';
+            animation: loadingDots 1.5s steps(4, end) infinite;
+        }
+
+        button:hover {
+            background-color: #45a049;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            width: 300px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        .product-card {
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px;
+            width: 200px; /* Set a fixed width */
+            height: 300px; /* Set a fixed height */
+            display: inline-block;
+            background-color: white;
+            transition: transform 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden; /* Ensures content stays within the card */
+            text-align: center; /* Center-aligns content */
+        }
+
+        .product-card img {
+            max-width: 100%;
+            height: 150px; /* Set a specific height for images */
+            border-radius: 5px;
+            transition: transform 0.2s;
+        }
+
+        .product-card h3 {
+            font-size: 1em; /* Reduce font size if needed */
+            margin: 10px 0 5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap; /* Keep name on one line */
+        }
+
+        .product-card p {
+            margin: 5px 0;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        .product-card button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .product-card button:hover {
+            background-color: #45a049;
+        }
+
+
+        #userIdDisplay {
+            margin: 20px 0;
+            font-size: 1.2em;
+            z-index: 2;
+            position: relative;
+        }
+        #searchBox {
+            margin: 20px 0;
+            display: none;
+            z-index: 2;
+            position: relative;
+            width: 300px; /* Adjust width to make it smaller */
+            margin: 0 auto; /* Center align the search box */
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.8); /* Light background to improve readability */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #searchBox input[type="text"] {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: calc(100% - 22px); /* Adjust width to fit within the smaller search box */
+            font-size: 14px;
+        }
+
+        #searchBox button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 12px; /* Reduced padding for a smaller button */
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-top: 5px;
+            transition: all 0.3s ease;
+        }
+
+        #searchBox button:hover {
+            background-color: #45a049;
+        }
+
+
+        #productContainer {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>E-Commerce Product Recommendation System</h1>
+
+    <button onclick="newUserPopup()">New User</button>
+    <button onclick="oldUserPopup()">Old User</button>
+
+    <div id="newUserPopup" class="popup">
+        <h3>Register</h3>
+        <label for="newUserTags">Enter Tags:</label>
+        <input type="text" id="newUserTags">
+        <button onclick="registerUser()">Register</button>
+        <button onclick="closePopup('newUserPopup')">Close</button>
+    </div>
+
+    <div id="oldUserPopup" class="popup">
+        <h3>Login</h3>
+        <label for="oldUserId">Enter User ID:</label>
+        <input type="text" id="oldUserId">
+        <button onclick="loginUser()">Login</button>
+        <button onclick="closePopup('oldUserPopup')">Close</button>
+    </div>
+
+    <div id="searchBox" style="display:none;">
+        <h3>Search Products</h3>
+        <input type="text" id="description" placeholder="Enter product description">
+        <button onclick="searchProducts()">Search</button>
+    </div>
+    <div id="loadingOverlay">
+        <div id="loadingSpinner"></div>
+        <div id="loadingText"></div>
+    </div>
+    <div id="userIdDisplay"></div>
+    <div id="recommendationMessage" style="margin-top: 20px; font-size: 1.2em; font-weight: bold;"></div>
+    <div id="productContainer"></div>
+
+    
+</body>
+</html>
