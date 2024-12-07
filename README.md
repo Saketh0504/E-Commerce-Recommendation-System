@@ -2,6 +2,7 @@
 
 A comprehensive recommendation system leveraging machine learning techniques like K-Means Clustering, Collaborative Filtering, and Content-Based Filtering to provide personalized property recommendations. The system effectively addresses the cold start problem for new users and enhances the overall user experience with a restructured hybrid recommendation approach.
 
+
 **Table of Contents**
 
 Features
@@ -18,6 +19,7 @@ API Endpoints
 
 Frontend Details
 
+
 **Features**
 
 Cold Start Problem Handling: Provides initial recommendations for new users.
@@ -30,6 +32,7 @@ User-Friendly Frontend: Built using JavaScript, HTML, and CSS for seamless inter
 
 Efficient Data Preprocessing: Handles missing data and selects relevant features for accurate predictions.
 
+
 **Tech Stack**
 
 Backend: Python, Flask, REST APIs
@@ -41,6 +44,7 @@ Database: SQLite / MySQL (customizable)
 Machine Learning: Scikit-learn, NumPy, Pandas
 
 Visualization: Matplotlib, Seaborn
+
 
 **Modules Overview**
 
