@@ -5,11 +5,17 @@ A comprehensive recommendation system leveraging machine learning techniques lik
 **Table of Contents**
 
 Features
+
 Tech Stack
+
 Modules Overview
+
 Installation
+
 Usage
+
 API Endpoints
+
 Frontend Details
 
 **Features**
